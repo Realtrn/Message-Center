@@ -123,20 +123,20 @@ int main(int argc, char **argv)
 	printf("1. I am Talker!\n");
 	printf("2. I am Listener!\n");
 	printf("3. I am both Talker and Listener\n");
-	int role;
+	char role;
 	printf("Press your choosen: ");
-	scanf("%d", &role);
-	while ((role < 1) || (role > 3)) {
+	scanf("%c", &role);
+	while (role != '1' && role != '3' && role != '2') {
 		printf("Your selection is invalid!\n");
 		printf("Press your choosen again: ");
-		scanf("%d", &role);
+		scanf("%c", &role);
 	}
 
 	pthread_t send_msg_thread;
 	pthread_t recv_msg_thread;
 
 	switch(role) {
-	case 1:
+	case '1':
 		printf("Your role is Talker\n");
 		printf("===================================\n");
   		if(pthread_create(&send_msg_thread, NULL, (void *) send_msg_handler, NULL) != 0) {
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     			return EXIT_FAILURE;
 		}
 		break;	
-	case 2:
+	case '2':
 		printf("Your role is Listener\n");
 		printf("===================================\n");
   		if(pthread_create(&recv_msg_thread, NULL, (void *) recv_msg_handler, NULL) != 0) {
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		break;
-	case 3:
+	case '3':
 		printf("Your role is both Talker and Listener\n");
 		printf("===================================\n");
   		if(pthread_create(&send_msg_thread, NULL, (void *) send_msg_handler, NULL) != 0) {
