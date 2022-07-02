@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <signal.h>
 
-//#define MAX_CLIENTS 1
 #define BUFFER_SZ 2048
 
 static _Atomic unsigned int cli_count = 0;
@@ -25,13 +24,12 @@ struct in_client
 	int sockfd;
 	int uid;
 	char name[32];
-    struct in_client *next ; 
+  char role ; 
+  struct in_client *next ; 
 };
 
 typedef struct in_client client_t ; 
 client_t *client_head ;
-client_t *client_last ;  
-//client_t *clients[MAX_CLIENTS];
 
 pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -53,11 +51,6 @@ void str_trim_lf (char* arr, int length) {
 void queue_add(client_t **cl){
 	pthread_mutex_lock(&clients_mutex);
 
-	// client_t *newclient = (client_t*)malloc(sizeof(client_t)) ; 
-    // newclient->address = cl->address ;
-    // newclient->sockfd = cl->sockfd ; 
-    // newclient->uid = cl->uid ; 
-    // newclient->next = NULL ; 
     if(client_head == NULL) client_head = *cl ;
     else
     {
@@ -104,7 +97,7 @@ void send_message(char *s, int uid){
     client_t *point_cl = client_head ; 
 	while(point_cl != NULL)
     {
-        if (point_cl->uid != uid)
+        if (point_cl->uid != uid && (point_cl->role == '2' || point_cl->role == '3'))
         {
             if (write(point_cl->sockfd, s, strlen(s)) < 0)
             {
@@ -133,6 +126,13 @@ void *handle_client(void *arg){
 		printf("Didn't enter the name.\n");
 		leave_flag = 1;
 	} else{
+    // creat role for client
+    cli->role = name[0] ; 
+    for(int i = 0 ; i < 31 ; i++)
+    {
+      name[i] = name[i+1] ; 
+    } 
+    //
 		strcpy(cli->name, name);
 		sprintf(buff_out, "%s has joined\n", cli->name);
 		printf("%s", buff_out);
