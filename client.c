@@ -100,8 +100,20 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	printf("Select your role:\n");
+	printf("1. I am Talker!\n");
+	printf("2. I am Listener!\n");
+	printf("3. I am both Talker and Listener\n");
+	char role;
+	printf("Press your choosen: ");
+	scanf("%c", &role);
+	while (role != '1' && role != '3' && role != '2') {
+		printf("Your selection is invalid!\n");
+		printf("Press your choosen again: ");
+		scanf("%c", &role);
+	}
 	struct sockaddr_in server_addr;
-
+	
 	/* Socket settings */
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
   	server_addr.sin_family = AF_INET;
@@ -116,21 +128,19 @@ int main(int argc, char **argv)
 	}
 
 	// Send name
-	send(sockfd, name, 32, 0);
+	char name_cp[32] ; 
+	for(int i = 0 ; i < 32 ; i ++)
+	{
+		if(i == 0) name_cp[i] = role ; 
+		else
+		{
+			name_cp[i] = name[i - 1] ; 
+		}
+	}
+	send(sockfd, name_cp, 32, 0);
 
 	printf("===== WELCOME TO THE CHATROOM =====\n");
-	printf("Select your role:\n");
-	printf("1. I am Talker!\n");
-	printf("2. I am Listener!\n");
-	printf("3. I am both Talker and Listener\n");
-	char role;
-	printf("Press your choosen: ");
-	scanf("%c", &role);
-	while (role != '1' && role != '3' && role != '2') {
-		printf("Your selection is invalid!\n");
-		printf("Press your choosen again: ");
-		scanf("%c", &role);
-	}
+	
 
 	pthread_t send_msg_thread;
 	pthread_t recv_msg_thread;
