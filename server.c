@@ -117,6 +117,9 @@ void *handle_client(void *arg){
 	char buff_out[BUFFER_SZ];
 	char name[32];
 	int leave_flag = 0;
+	char s1[12] = "- Talker";
+	char s2[12] = "- Listener";
+	char s3[12] = "- Both";
 
 	cli_count++;
 	client_t *cli = (client_t *)arg;
@@ -125,16 +128,24 @@ void *handle_client(void *arg){
 	if(recv(cli->sockfd, name, 32, 0) <= 0 || strlen(name) <  2 || strlen(name) >= 32-1){
 		printf("Didn't enter the name.\n");
 		leave_flag = 1;
-	} else{
+	} else 
+	{
     // creat role for client
     cli->role = name[0] ; 
-    for(int i = 0 ; i < 31 ; i++)
-    {
-      name[i] = name[i+1] ; 
-    } 
+    for(int i = 0 ; i < 31 ; i++){
+        name[i] = name[i+1];
+    }  
     //
 		strcpy(cli->name, name);
-		sprintf(buff_out, "%s has joined\n", cli->name);
+		if(cli->role == '1'){
+			sprintf(buff_out, "%s %s has joined \n", cli->name, s1);
+		}
+		if(cli->role == '2'){
+			sprintf(buff_out, "%s %s has joined \n", cli->name, s2);
+		}
+		if(cli->role == '3'){
+			sprintf(buff_out, "%s %s has joined \n", cli->name, s3);
+		}		
 		printf("%s", buff_out);
 		send_message(buff_out, cli->uid);
 	}
@@ -183,7 +194,6 @@ int main(int argc, char **argv){
 		return EXIT_FAILURE;
 	}
 
-	char *ip = "127.0.0.1";
 	int port = atoi(argv[1]);
 	int option = 1;
 	int listenfd = 0, connfd = 0;
