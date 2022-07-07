@@ -97,7 +97,7 @@ void send_msg_handler()
 		str_overwrite_stdout();
 		int k = 0;
 		char c = 0;
-		//int m = 0;
+
 		while (c != '\n')
 		{
 			if (k > 0) in_task = 1;
@@ -118,7 +118,6 @@ void send_msg_handler()
 			}
 			else
 			{
-				//m = 0;
 				message[k] = c;
 				k++;
 			}
