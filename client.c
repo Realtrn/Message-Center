@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 	scanf("%c", &role);
 	if (role != '1' && role != '3' && role != '2') 
 	{
-		printf("Your name must be less than 32 or your selection is invalid!!!\n");
+		printf("Your name is more than 32 or your selection is invalid!!!\n");
 		return EXIT_FAILURE;
 	}
 	
