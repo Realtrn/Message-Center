@@ -200,7 +200,6 @@ int main(int argc, char **argv)
 	printf("2. I am Listener!\n");
 	printf("3. I am both Talker and Listener\n");
 	char role;
-	//printf("Press your choosen: ");
 	scanf("%c", &role);
 	if (role != '1' && role != '3' && role != '2') 
 	{
