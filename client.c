@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <termios.h>
 
 #define LENGTH 2048
 
@@ -15,6 +16,51 @@
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name[32];
+volatile int in_task = 0;
+pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+static struct termios old, new;
+
+void initTermios(int echo)
+{
+	tcgetattr(0, &old); // grab old terminal i/o settings
+	new = old; // make new settings same as old settings
+	new.c_lflag &= ~ICANON; // disable buffered i/o
+	new.c_lflag &= echo ? ECHO : ~ECHO; // set echo mode
+	tcsetattr(0, TCSANOW, &new); // apply terminal io settings
+}
+
+/* Restore old terminal i/o settings */
+void resetTermios(void)
+{
+	tcsetattr(0, TCSANOW, &old);
+}
+
+/* Read 1 character - echo defines echo mode */
+char getch_(int echo)
+{
+	char ch;
+	initTermios(echo);
+	ch = getchar();
+	resetTermios();
+	return ch;
+}
+
+ /* Read 1 character without echo
+ * getch() function definition.
+ * */
+char getch(void)
+{
+		return getch_(0);
+}
+
+
+ /* Read 1 character with echo
+ * getche() function definition.
+ * */
+char getche(void)
+{
+	return getch_(1);
+}
 
 void str_overwrite_stdout()
 {
@@ -47,9 +93,45 @@ void send_msg_handler()
 
 	while(1) 
 	{	
+		printf("\033[0;32m");
 		str_overwrite_stdout();
-    		fgets(message, LENGTH, stdin);
-	    	str_trim_lf(message, LENGTH);
+		int k = 0;
+		char c = 0;
+		//int m = 0;
+		while (c != '\n')
+		{
+			if (k > 0) in_task = 1;
+			else in_task = 0;
+			c = getche(); 
+			
+			// use backspace to erase mess
+			if ((int)c == 127 && k > 0)
+			{
+				printf("\033[%dD", 2);
+				printf("\033[%dK", 0);
+				message[k--] = 0;
+			}
+			else if ((int)c == 127 && k == 0)
+			{
+				printf("\033[%dD", 2);
+				printf("\033[%dK", 0);
+			}
+			else
+			{
+				//m = 0;
+				message[k] = c;
+				k++;
+			}
+		}
+		in_task = 0;
+		str_trim_lf(message, LENGTH);
+		printf("\033[%dA", 1);
+		printf("\033[G");
+		printf("\033[%dK", 0);
+		usleep(1000);
+		printf("\033[G");
+		printf("\033[%dK", 0);
+		printf("\033[0;32m> %s\n\033[0;37m",message);
 
     		if (strcmp(message, "exit") == 0) 
 		{
@@ -76,8 +158,12 @@ void recv_msg_handler()
 		int receive = recv(sockfd, message, LENGTH, 0);
 	    	if (receive > 0) 
 		{
-      			printf("%s", message);
+			while (in_task == 1);
+			printf("\033[G");
+			printf("\033[K");
+			printf("\033[0;37m%s\033[0;32m", message);
       			str_overwrite_stdout();
+			in_task = 0;
 	    	} 
 		else if (receive == 0) 
 		{
