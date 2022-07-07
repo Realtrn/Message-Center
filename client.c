@@ -32,6 +32,7 @@ int sockfd = 0;
 
 char name[32];
 
+
 volatile int in_task = 0 ; 
 
 pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -189,22 +190,60 @@ void send_msg_handler()
 			int k = 0 ;
 
 			char c = 0 ;
+			int m = 0 ; 
 
 			while(c != '\n')
 
 			{
 
-				if(k > 0) in_task = 1 ; 
+				// if(k > 0) in_task = 1 ; 
+				// else in_task = 0 ; 
+				if(in_task > 0) 
+				{ 
+				printf("%s" , message) ; 
+				in_task = 0 ; 
+				}
+				c = getche() ;
 
-			
+				if((int)c == 127 && k>0)
 
-				
+				{
 
-				c = getche() ; 
+					printf("\033[%dD",2)  ; 
+
+					printf("\033[%dK",0) ; 
+					 
+					 
+
+					message[k--] = 0 ; 
+					 
+
+					
+
+					//printf("\n%s",message) ; 
+
+				}
+				else if((int)c == 127 && k==0)
+
+				{
+
+					printf("\033[%dD",2)  ; 
+
+					printf("\033[%dK",0) ; 
+					 
+					 
+
+					
+
+				}
+				else
+				{
+				 m = 0 ; 
 
 				message[k] = c ;
 
 				k ++ ;  
+				}
 
 			}
 
@@ -261,12 +300,16 @@ void recv_msg_handler()
 		int receive = recv(sockfd, message, LENGTH, 0);
 
     		if (receive > 0) {
-
-				 while(in_task == 1) ; 
-
+				 
+				 //while(in_task == 1) ; 
+				printf("\033[G") ;
+				printf("\033[K") ;
       			printf("%s", message);
 
       			str_overwrite_stdout();
+				in_task ++ ;
+				 
+				
 
     		} else if (receive == 0) {
 
