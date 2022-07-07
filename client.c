@@ -15,11 +15,11 @@
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name[32];
-int lines = 1;
+int lines = 3;
 
 void str_overwrite_stdout()
 {
-	printf("%s", "> ");
+	printf("\033[1A%s", "> ");
   	fflush(stdout);
 }
 
@@ -45,14 +45,14 @@ void send_msg_handler()
 	char buffer[LENGTH + 32] = {};
 
 	while(1) {	
-		//str_overwrite_stdout();
+		    //str_overwrite_stdout();
     		fgets(message, LENGTH, stdin);
     		str_trim_lf(message, LENGTH);
 
     		if (strcmp(message, "exit") == 0) {
 			break;
     		} else {
-      			sprintf(buffer, "%s: %s\n", name, message);
+      			sprintf(buffer, "%s: %s\n\r", name, message);
       			send(sockfd, buffer, strlen(buffer), 0);
     		}
 
@@ -65,16 +65,16 @@ void send_msg_handler()
 
 
 void prnt_cl( char *buf){
-				
+
                fprintf(stdout,
                 "\033[s"            /* Save cursor position. */
-                "\033[%dF"          /* Move cursor up d lines. */
+                "\033[%dA"          /* Move cursor up d lines. */
                 
                	"%s"                /* String to print. */
                 "\r"                /* Moves cursor to beginning of line. */
                 "\033[u"            /* Restore cursor position. */
                 ,
-                --lines,
+                lines,
                 buf
         );
         fflush(stdout);
@@ -84,11 +84,13 @@ void prnt_cl( char *buf){
 void recv_msg_handler()
 {
 	char message[LENGTH] = {};
+	++lines;
   	while (1) {
 		int receive = recv(sockfd, message, LENGTH, 0);
     		if (receive > 0) {
       			//printf("%s", message);
       			prnt_cl(message);
+
     		} else if (receive == 0) {
 			break;
     		} else {
