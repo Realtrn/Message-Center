@@ -12,7 +12,6 @@
 
 #define BUFFER_SZ 2048
 
-static _Atomic unsigned int cli_count = 0;
 static int uid = 10;
 
 /* Client structure */
@@ -50,7 +49,7 @@ void str_trim_lf (char* arr, int length)
   	}
 }
 
-void queue_add(client_t **cl) 
+void list_add(client_t **cl) 
 {
 	pthread_mutex_lock(&clients_mutex);
 
@@ -64,12 +63,13 @@ void queue_add(client_t **cl)
         	}
         	point_cl->next = *cl ; 
     	}
+
 	pthread_mutex_unlock(&clients_mutex);
 }
 
 
 
-void queue_remove(int uid) 
+void list_remove(int uid) 
 {
 	pthread_mutex_lock(&clients_mutex);
 
@@ -98,7 +98,8 @@ void queue_remove(int uid)
 void send_message(char *s, int uid) 
 {
 	pthread_mutex_lock(&clients_mutex);
-    	client_t *point_cl = client_head ; 
+    	
+	client_t *point_cl = client_head ; 
 	while(point_cl != NULL)
     	{
         	if (point_cl->uid != uid && (point_cl->role == '2' || point_cl->role == '3'))
@@ -126,7 +127,6 @@ void *handle_client(void *arg)
 	char s2[12] = "- Listener";
 	char s3[12] = "- Both";
 
-	cli_count++;
 	client_t *cli = (client_t *)arg;
 
 	// Name
@@ -196,10 +196,9 @@ void *handle_client(void *arg)
 		bzero(buff_out, BUFFER_SZ);
 	}
 
-  	/* Delete client from queue and yield thread */
+  	/* Delete client from list and yield thread */
 	close(cli->sockfd);
-  	queue_remove(cli->uid);
-  	cli_count--;
+  	list_remove(cli->uid);
   	pthread_detach(pthread_self());
 
 	return NULL;
@@ -262,8 +261,8 @@ int main(int argc, char **argv)
 		cli->uid = uid++;
 	        cli->next = NULL ; 
 
-		/* Add client to the queue and fork thread */
-		queue_add(&cli);
+		/* Add client to the list and fork thread */
+		list_add(&cli);
 		pthread_create(&tid, NULL, &handle_client, (void*)cli);
 
 		/* Reduce CPU usage */
