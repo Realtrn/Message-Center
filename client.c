@@ -200,14 +200,12 @@ int main(int argc, char **argv)
 	printf("2. I am Listener!\n");
 	printf("3. I am both Talker and Listener\n");
 	char role;
-	printf("Press your choosen: ");
+	//printf("Press your choosen: ");
 	scanf("%c", &role);
-	
-	while (role != '1' && role != '3' && role != '2') 
+	if (role != '1' && role != '3' && role != '2') 
 	{
-		printf("Your selection is invalid!\n");
-		printf("Press your choosen again: ");
-		scanf("%c", &role);
+		printf("Your name must be less than 32 or your selection is invalid!!!\n");
+		return EXIT_FAILURE;
 	}
 	
 	struct sockaddr_in server_addr;
