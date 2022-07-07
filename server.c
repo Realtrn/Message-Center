@@ -33,20 +33,20 @@ pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void str_overwrite_stdout() 
 {
-    printf("\r%s", "> ");
-    fflush(stdout);
+	printf("\r%s", "> ");
+	fflush(stdout);
 }
 
 void str_trim_lf (char* arr, int length) 
 {
-  	int i;
-  	for (i = 0; i < length; i++) 
+	int i;
+	for (i = 0; i < length; i++) 
 	{
-    	if (arr[i] == '\n') 
+		if (arr[i] == '\n') 
 		{
-      		arr[i] = '\0';
-      		break;
-    	}
+      			arr[i] = '\0';
+      			break;
+    		}
   	}
 }
 
@@ -54,16 +54,16 @@ void queue_add(client_t **cl)
 {
 	pthread_mutex_lock(&clients_mutex);
 
-    if(client_head == NULL) client_head = *cl ;
-    else
-    {
-        client_t *point_cl = client_head ; 
-        while(point_cl->next != NULL)
-        {
-            point_cl = point_cl->next ; 
-        }
-        point_cl->next = *cl ; 
-    }
+    	if(client_head == NULL) client_head = *cl ;
+    	else
+    	{
+        	client_t *point_cl = client_head ; 
+        	while(point_cl->next != NULL)
+        	{
+            		point_cl = point_cl->next ; 
+        	}
+        	point_cl->next = *cl ; 
+    	}
 	pthread_mutex_unlock(&clients_mutex);
 }
 
@@ -74,46 +74,46 @@ void queue_remove(int uid)
 	pthread_mutex_lock(&clients_mutex);
 
 	client_t *point_cl = client_head ; 
-    client_t *pre_cl ; 
-    if(point_cl != NULL && client_head->uid == uid)
-    { 
-        client_head=client_head->next ; 
-        free(point_cl) ;  
-    }
-    else
-    {
-        while (point_cl != NULL && point_cl->uid != uid)
-        {
-            pre_cl = point_cl;
-            point_cl = point_cl->next;
-        }
-        pre_cl->next = point_cl->next;
-        free(point_cl);
-    }
+    	client_t *pre_cl ; 
+    	if(point_cl != NULL && client_head->uid == uid)
+    	{ 
+        	client_head=client_head->next ; 
+        	free(point_cl) ;  
+    	}
+    	else
+    	{
+        	while (point_cl != NULL && point_cl->uid != uid)
+        	{
+            		pre_cl = point_cl;
+            		point_cl = point_cl->next;
+        	}
+        	pre_cl->next = point_cl->next;
+        	free(point_cl);
+    	}
 
-    pthread_mutex_unlock(&clients_mutex);
+    	pthread_mutex_unlock(&clients_mutex);
 }
 
 
 void send_message(char *s, int uid) 
 {
 	pthread_mutex_lock(&clients_mutex);
-    client_t *point_cl = client_head ; 
+    	client_t *point_cl = client_head ; 
 	while(point_cl != NULL)
-    {
-        if (point_cl->uid != uid && (point_cl->role == '2' || point_cl->role == '3'))
-        {
-            if (write(point_cl->sockfd, s, strlen(s)) < 0)
-            {
-                perror("ERROR: write to descriptor failed");
-                break;
-            }
+    	{
+        	if (point_cl->uid != uid && (point_cl->role == '2' || point_cl->role == '3'))
+        	{
+            		if (write(point_cl->sockfd, s, strlen(s)) < 0)
+            		{
+                		perror("ERROR: write to descriptor failed");
+                		break;
+            		}
             
-        }
-        point_cl = point_cl->next;
-    }
+        	}
+        	point_cl = point_cl->next;
+    	}
 
-    pthread_mutex_unlock(&clients_mutex);
+    	pthread_mutex_unlock(&clients_mutex);
 }
 
 /* Handle all communication with the client */
@@ -137,12 +137,12 @@ void *handle_client(void *arg)
 	} 
 	else 
 	{
-    	// creat role for client
-    	cli->role = name[0] ; 
-    	for(int i = 0 ; i < 31 ; i++)
+    		// creat role for client
+	    	cli->role = name[0] ; 
+    		for(int i = 0 ; i < 31 ; i++)
 		{
-        	name[i] = name[i+1];
-    	}  
+        		name[i] = name[i+1];
+    		}  
 
 		strcpy(cli->name, name);
 		if(cli->role == '1')
@@ -232,21 +232,21 @@ int main(int argc, char **argv)
 	if(setsockopt(listenfd, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
 	{
 		perror("ERROR: setsockopt failed");
-    	return EXIT_FAILURE;
+	    	return EXIT_FAILURE;
 	}
 
 	/* Bind */
   	if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) 
 	{
-    	perror("ERROR: Socket binding failed");
-    	return EXIT_FAILURE;
+	    	perror("ERROR: Socket binding failed");
+    		return EXIT_FAILURE;
   	}
 
   	/* Listen */
   	if (listen(listenfd, 10) < 0) 
 	{
-    	perror("ERROR: Socket listening failed");
-    	return EXIT_FAILURE;
+	    	perror("ERROR: Socket listening failed");
+    		return EXIT_FAILURE;
 	}
 
 	printf("=== WELCOME TO THE CHATROOM ===\n");
@@ -260,7 +260,7 @@ int main(int argc, char **argv)
 		cli->address = cli_addr;
 		cli->sockfd = connfd;
 		cli->uid = uid++;
-        cli->next = NULL ; 
+	        cli->next = NULL ; 
 
 		/* Add client to the queue and fork thread */
 		queue_add(&cli);
